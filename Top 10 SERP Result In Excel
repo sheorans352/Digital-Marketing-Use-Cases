@@ -1,0 +1,72 @@
+import openpyxl
+from googlesearch import search
+from datetime import datetime
+
+def classify_url(url):
+    # Add your own classification logic here
+    if "toi" in url:
+        return "News Site"
+    elif "hindustantimes" in url or "economicstimes" in url:
+        return "News Site"
+    elif "education" in url or "college" in url or "school" in url:
+        return "Educational Institution"
+    elif "gov." in url or "nic." in url:
+        return "Government Site"
+    elif "sbi" in url:
+        return "SBI"
+    elif "hdfc" in url:
+        return "HDFC"
+    elif "canara" in url:
+        return "Canara"
+    elif "pnb" in url:
+        return "PNB"
+    elif "icici" in url:
+        return "ICICI"
+    else:
+        return "Other"
+
+def get_top_10_results(query):
+    results = []
+    try:
+        for i, url in enumerate(search(query + " site:in", num_results=10), start=1):
+            classification = classify_url(url)
+            results.append({
+                'Keyword': query,
+                'Date of Search': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                'Rank': i,
+                'Ranking URL': url,
+                'Classification': classification
+            })
+    except Exception as e:
+        print(f"Error in get_top_10_results for query '{query}': {e}")
+    return results
+
+def save_to_excel(results):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(['Keyword', 'Date of Search', 'Rank', 'Ranking URL', 'Classification'])
+
+    for result in results:
+        ws.append([result['Keyword'], result['Date of Search'], result['Rank'], result['Ranking URL'], result['Classification']])
+
+    excel_filename = f"Top_10_SERP_{datetime.now().strftime('%Y%m%d%H%M%S')}.xlsx"
+    wb.save(excel_filename)
+    print(f"Data saved to {excel_filename}")
+
+if __name__ == "__main__":
+    # You can either specify keywords here or read from a .txt file
+    keywords = [
+        "credit card", "savings account", "open savings account",
+        "saving account interest rate", "credit card interest rate",
+        "low interest loan", "travel credit card", "shopping credit card",
+        "apply credit card", "apply loan", "types of loan", "type of credit card"
+    ]
+
+
+
+    all_results = []
+    for keyword in keywords:
+        results = get_top_10_results(keyword)
+        all_results.extend(results)
+
+    save_to_excel(all_results)
