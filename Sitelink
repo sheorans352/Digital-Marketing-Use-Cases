@@ -1,0 +1,36 @@
+import pandas as pd
+
+# Load the Excel file (change the file path to your file location)
+file_path = "C:\\Users\\TML-86\\Downloads\\Bajaj Allianz KWs.csv"
+df = pd.read_csv(file_path)
+
+# Check the first few rows of the data
+df.head()
+# Round the 'Avg position' to the nearest whole number
+df['Average of Average Position'] = df['Average of Average Position'].round()
+
+# Group by 'Query' and 'Avg position' and count the unique URLs
+url_count = df.groupby(['Query', 'Average of Average Position'])['Landing Page'].nunique().reset_index(name='Unique_URLs')
+
+# Filter for positions with more than one URL
+multiple_urls = url_count[url_count['Unique_URLs'] > 1]
+
+# Display queries and positions with more than one URL
+multiple_urls.head()
+# Filter the original DataFrame to keep only the queries and positions with more than one URL
+df_filtered = df.merge(multiple_urls[['Query', 'Average of Average Position']], on=['Query', 'Average of Average Position'])
+
+# Sort by Query, Avg position, and Clicks (highest clicks first)
+df_sorted = df_filtered.sort_values(by=['Query', 'Average of Average Position', 'Sum of Url Clicks'], ascending=[True, True, False])
+
+# Identify the URL with the highest clicks as Main URL
+df_sorted['URL_Type'] = df_sorted.groupby(['Query', 'Average of Average Position']).cumcount().apply(lambda x: 'Main URL' if x == 0 else 'Sitelink URL')
+
+# Display the DataFrame with the labeled URLs
+df_sorted.head()
+# Save the processed DataFrame to a new CSV file
+output_file = 'C:\\Users\\TML-86\\Downloads\\processed_file.csv'
+df_sorted.to_csv(output_file, index=False)
+
+# Display the final DataFrame
+df_sorted.head()
